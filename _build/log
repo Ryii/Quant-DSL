@@ -1,0 +1,16 @@
+# dune exec ./_build/default/repl.exe
+# OCAMLPARAM: unset
+# Shared cache: disabled
+# Shared cache location: /home/ryii/.cache/dune/db
+# Workspace root: /home/ryii/QuantEx2
+# Auto-detected concurrency: 20
+# Dune context:
+#  { name = "default"
+#  ; kind = "default"
+#  ; profile = Dev
+#  ; merlin = true
+#  ; fdo_target_exe = None
+#  ; build_dir = In_build_dir "default"
+#  ; instrument_with = []
+#  }
+$ /home/ryii/.opam/cs3110-2024fa/bin/ocamlc.opt -config > /tmp/dune_bb39a7_output

@@ -1,0 +1,14 @@
+opam-version: "2.0"
+name: "quantex"
+version: "0.1.0"
+synopsis: "Your project synopsis"
+description: """
+A more detailed description of your project.
+"""
+depends: [
+  "ocaml" {>= "4.08.0"}
+  (* List other dependencies here *)
+]
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]

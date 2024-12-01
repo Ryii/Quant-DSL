@@ -1,0 +1,8 @@
+lib: [
+  "_build/install/default/lib/quantex/META"
+  "_build/install/default/lib/quantex/dune-package"
+  "_build/install/default/lib/quantex/opam"
+]
+bin: [
+  "_build/install/default/bin/quantex-repl"
+]

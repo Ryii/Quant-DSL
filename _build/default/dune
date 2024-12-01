@@ -1,0 +1,22 @@
+(library
+ (name quantex)
+ (modules ast lexer parser optimizer codegen interpreter semantics typechecker)
+ (libraries menhirLib))
+
+(executable
+ (name repl)
+ (public_name quantex-repl)
+ (modules repl)
+ (libraries quantex))
+
+(rule
+ (targets parser.ml parser.mli)
+ (deps parser.mly ast.ml)
+ (action (progn
+   (run ocamlc -c ast.ml)
+   (run menhir --infer --explain --table --base parser parser.mly))))
+
+(rule
+ (targets lexer.ml)
+ (deps lexer.mll)
+ (action (run ocamllex lexer.mll)))

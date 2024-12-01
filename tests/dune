@@ -1,0 +1,14 @@
+; (test
+;  (name test_interpreter)
+;  (modules test_interpreter)
+;  (libraries quantex ounit2))
+
+; (test
+;  (name test_lexer)
+;  (modules test_lexer)
+;  (libraries quantex ounit2))
+
+; (test
+;  (name test_parser)
+;  (modules test_parser)
+;  (libraries quantex ounit2))
