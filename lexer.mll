@@ -31,7 +31,7 @@ let buffer = Buffer.create 16
 }
 
 rule read = parse
-  | [' ' '\t' '\r'] { read lexbuf }  (* Skip whitespace *)
+  | [' ' '\t' '\r'] { read lexbuf }
   | '\n'            { NEWLINE }
   | "/*"            { comment lexbuf }
   | "//"            { single_line_comment lexbuf }
@@ -67,7 +67,7 @@ rule read = parse
   | _ as c          { failwith (Printf.sprintf "Unexpected character: %c" c) }
 
 and string_literal = parse
-  | '"'             { () }  (* End of string *)
+  | '"'             { () }
   (* | '\\' (
       'n'           { Buffer.add_char buffer '\n'; string_literal lexbuf }
     | 't'           { Buffer.add_char buffer '\t'; string_literal lexbuf }

@@ -1,14 +1,19 @@
 opam-version: "2.0"
 name: "quantex"
 version: "0.1.0"
-synopsis: "Your project synopsis"
+synopsis: "Quantitative Analysis + Simulation DSL"
 description: """
-A more detailed description of your project.
+QuantDSL is a Domain-Specific Language built to perform quantitative analysis and simulations. 
+It supports operations such as Monte Carlo simulations, optimization, and more functions.
 """
+authors: [
+  "Ryan Sun"
+]
+license: "MIT"
+dev-repo: "git+https://github.com/Ryii/Quant-DSL.git"
+
 depends: [
   "ocaml" {>= "4.08.0"}
-  (* List other dependencies here *)
-]
-build: [
-  ["dune" "build" "-p" name "-j" jobs]
+  "dune" {>= "2.0"}
+  "ocamlfind"
 ]

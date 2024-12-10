@@ -1,6 +1,7 @@
 (library
  (name quantex)
- (modules ast lexer parser optimizer codegen interpreter semantics typechecker)
+ (public_name quantex)
+ (modules ast lexer parser optimizer codegen interpreter semantics typechecker builtins)
  (libraries menhirLib))
 
 (executable

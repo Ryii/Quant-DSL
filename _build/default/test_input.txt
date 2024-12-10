@@ -1,3 +1,0 @@
-let x = 10;
-x + 5;
-if x > 5 then x else 0;

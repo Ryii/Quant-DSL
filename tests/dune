@@ -1,14 +1,24 @@
-; (test
-;  (name test_interpreter)
-;  (modules test_interpreter)
-;  (libraries quantex ounit2))
+(test
+ (name test_ast)
+ (modules test_ast)
+ (libraries ounit2 quantex))
 
-; (test
-;  (name test_lexer)
-;  (modules test_lexer)
-;  (libraries quantex ounit2))
+(test
+ (name test_codegen)
+ (modules test_codegen)
+ (libraries ounit2 quantex))
 
-; (test
-;  (name test_parser)
-;  (modules test_parser)
-;  (libraries quantex ounit2))
+(test
+ (name test_builtins)
+ (modules test_builtins)
+ (libraries ounit2 quantex))
+
+(test
+ (name test_interpreter)
+ (modules test_interpreter)
+ (libraries ounit2 quantex))
+
+(test
+ (name test_semantics)
+ (modules test_semantics)
+ (libraries ounit2 quantex))

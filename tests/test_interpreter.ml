@@ -1,39 +1,19 @@
-(* tests/test_interpreter.ml *)
 open OUnit2
-open Lexer
-open Parser
-open Interpreter
-open Codegen
-open Semantics
-open Typechecker
-open Optimizer
-open Ast
+open Quantex.Interpreter
+open Quantex.Codegen
 
-let interpret_string s =
-  let lexbuf = Lexing.from_string s in
-  let ast = Parser.program Lexer.read lexbuf in
-  Semantics.analyze_program ast;
-  Typechecker.type_check_program ast;
-  let optimized_ast = Optimizer.optimize_program ast in
-  let code = Array.of_list (Codegen.codegen_program optimized_ast) in
-  Interpreter.run_program code
-
-let test_interpreter_addition _ =
-  let result = interpret_string "5 + 3;" in
+let test_interpreter_add _ =
+  let env = Hashtbl.create 16 in
+  let code = [LOAD_CONST 2.0; LOAD_CONST 3.0; ADD; RETURN] in
+  let result = run_program (Array.of_list code) env in
   match result with
-  | VFloat f -> assert_equal 8.0 f
-  | _ -> assert_failure "Interpreter failed on '5 + 3;'"
-
-let test_interpreter_let _ =
-  let result = interpret_string "let x = 10; x * 2;" in
-  match result with
-  | VFloat f -> assert_equal 20.0 f
-  | _ -> assert_failure "Interpreter failed on 'let x = 10; x * 2;'"
+  | Some (VFloat res) -> assert_equal 5.0 res ~printer:string_of_float
+  | _ -> assert_failure "Addition failed"
 
 let suite =
   "Interpreter Tests" >::: [
-    "test_interpreter_addition" >:: test_interpreter_addition;
-    "test_interpreter_let" >:: test_interpreter_let;
+    "test_interpreter_add" >:: test_interpreter_add;
   ]
 
-let () = run_test_tt_main suite
+let () =
+  run_test_tt_main suite
