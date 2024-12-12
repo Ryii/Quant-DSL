@@ -1,4 +1,3 @@
-(* codegen.ml *)
 open Ast
 
 type opcode =
@@ -17,6 +16,7 @@ type opcode =
   | INDEX
   | MAKE_ARRAY of int
   | MAKE_DICT of int
+  | LOAD_CLOSURE of string list * stmt list (* new opcode *)
   | NOP
 
 let rec codegen_program (Program(stmts)) =
@@ -32,8 +32,9 @@ and codegen_stmt = function
       codegen_expr expr
   | ReturnStmt(expr) ->
       codegen_expr expr @ [RETURN]
-  | _ -> failwith "Unsupported statement in codegen"
-
+  | IfStmt(_,_,_) | WhileStmt(_,_) ->
+      failwith "Codegen for control structures not yet implemented" (* For simplicity *)
+      
 and codegen_expr = function
   | FloatLit f -> [LOAD_CONST f]
   | StringLit s -> [LOAD_STRING s]
@@ -44,6 +45,8 @@ and codegen_expr = function
       lhs_code @ rhs_code @ [opcode_of_binop op]
   | UnaryOp(Neg, expr) ->
       codegen_expr expr @ [NEG]
+  | UnaryOp(Not, _) ->
+      failwith "Not operator not implemented in codegen"
   | FuncCall(name, args) ->
       let args_code = List.flatten (List.map codegen_expr args) in
       args_code @ [CALL_FUNC(name, List.length args)]
@@ -62,7 +65,9 @@ and codegen_expr = function
   | BoolLit b ->
       let float_val = if b then 1.0 else 0.0 in
       [LOAD_CONST float_val]
-  | _ -> failwith "Unsupported expression in codegen"
+  | Lambda(params, stmts) ->
+      (* We don't codegen the function body here; we store it as data in a closure *)
+      [LOAD_CLOSURE (params, stmts)]
 
 and opcode_of_binop = function
   | Add -> ADD
@@ -70,4 +75,4 @@ and opcode_of_binop = function
   | Mul -> MUL
   | Div -> DIV
   | Pow -> POW
-  | _ -> failwith "Unsupported binary operation"
+  | _ -> failwith "Unsupported binary operation in codegen"

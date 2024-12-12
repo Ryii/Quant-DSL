@@ -1,4 +1,3 @@
-(* ast.ml *)
 type program = Program of stmt list
 and stmt =
   | LetStmt of string * expr
@@ -6,6 +5,7 @@ and stmt =
   | ReturnStmt of expr
   | IfStmt of expr * stmt list * stmt list
   | WhileStmt of expr * stmt list
+
 and expr =
   | FloatLit of float
   | StringLit of string
@@ -36,19 +36,22 @@ type value =
   | VBool of bool
   | VArray of value list
   | VDict of (value * value) list
+  | VClosure of string list * stmt list * (string, value) Hashtbl.t
 
 let rec string_of_value = function
   | VFloat f -> string_of_float f
   | VString s -> "\"" ^ s ^ "\""
   | VBool b -> string_of_bool b
-  | VArray values -> 
+  | VArray values ->
       "[" ^ (String.concat ", " (List.map string_of_value values)) ^ "]"
-  | VDict entries -> 
-      "{" ^ 
-      (String.concat ", " 
-         (List.map (fun (k, v) -> 
-           string_of_value k ^ ": " ^ string_of_value v) entries)) ^ 
+  | VDict entries ->
+      "{" ^
+      (String.concat ", "
+         (List.map (fun (k, v) ->
+           string_of_value k ^ ": " ^ string_of_value v) entries)) ^
       "}"
+  | VClosure(_, _, _) ->
+      "<closure>"
 
 let rec string_of_typ = function
   | TFloat -> "float"

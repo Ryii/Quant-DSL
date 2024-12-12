@@ -11,7 +11,7 @@ and type_check_stmt env = function
   | LetStmt(name, expr) ->
       let expr_typ = type_of_expr env expr in
       Hashtbl.add env name { typ = Some expr_typ; initialized = true };
-      print_endline ("[TypeChecker] Declared variable: " ^ name ^ " with type " ^ string_of_typ expr_typ)
+      (* print_endline ("[TypeChecker] Declared variable: " ^ name ^ " with type " ^ string_of_typ expr_typ) *)
   | ExprStmt expr ->
       ignore (type_of_expr env expr)
   | ReturnStmt expr ->
@@ -63,13 +63,17 @@ and type_of_expr env = function
           signature.return_type
       else
           failwith ("[TypeChecker] Undefined function: " ^ name)
-  | Lambda(params, stmts) ->
+  | Lambda(params, _) ->
+        (* For now, assumee all params are float + return is float *)
+        (* Later: analyze return statements *)
+        TFunc(List.map (fun _ -> TFloat) params, TFloat)
+  (* | Lambda(params, stmts) ->
       let func_env = Hashtbl.create 16 in
       List.iter (fun param ->
           Hashtbl.add func_env param { typ = Some TFloat; initialized = true }
       ) params;
       List.iter (type_check_stmt func_env) stmts;
-      TFunc(List.map (fun _ -> TFloat) params, TFloat)
+      TFunc(List.map (fun _ -> TFloat) params, TFloat) *)
   | ArrayLit elems ->
       let elem_types = List.map (type_of_expr env) elems in
       (match elem_types with

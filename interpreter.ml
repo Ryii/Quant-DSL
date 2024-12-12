@@ -1,11 +1,19 @@
-(* interpreter.ml *)
 open Ast
 open Codegen
 open Builtins
 
 type env = (string, value) Hashtbl.t
 
-let run_program code env =
+let clone_env original_env =
+  let new_env = Hashtbl.create (Hashtbl.length original_env) in
+  Hashtbl.iter (fun k v -> Hashtbl.add new_env k v) original_env;
+  new_env
+
+let rec run_statements code env =
+  let code_arr = Array.of_list code in
+  run_program code_arr env
+
+and run_program code env =
   let stack = Stack.create () in
   let rec exec ip =
     if ip < Array.length code then
@@ -13,23 +21,21 @@ let run_program code env =
       | LOAD_CONST f ->
           Stack.push (VFloat f) stack;
           exec (ip + 1)
-      | LOAD_STRING s -> 
+      | LOAD_STRING s ->
           Stack.push (VString s) stack;
           exec (ip + 1)
       | LOAD_VAR name ->
-              let v =
-                  try Hashtbl.find env name
-                  with Not_found -> 
-                      failwith ("Undefined variable: " ^ name ^ ". Available variables: " ^ 
-                            (String.concat ", " (Hashtbl.fold (fun k _ acc -> k :: acc) env [])))
-              
-              in
-              Stack.push v stack;
-              exec (ip + 1)
+          let v =
+            try Hashtbl.find env name
+            with Not_found ->
+              failwith ("Undefined variable: " ^ name)
+          in
+          Stack.push v stack;
+          exec (ip + 1)
       | STORE_VAR name ->
           let v = Stack.pop stack in
           Hashtbl.replace env name v;
-          print_endline ("Stored variable: " ^ name ^ " = " ^ string_of_value v);
+          (* print_endline ("Stored variable: " ^ name ^ " = " ^ string_of_value v); *)
           exec (ip + 1)
       | ADD ->
           (match Stack.pop stack, Stack.pop stack with
@@ -68,18 +74,29 @@ let run_program code env =
           | _ -> failwith "NEG: operand must be a number");
           exec (ip + 1)
       | RETURN ->
-            Some (Stack.pop stack)
+          Some (Stack.pop stack)
       | NOP ->
           exec (ip + 1)
       | CALL_FUNC(name, argc) ->
         let args = List.init argc (fun _ -> Stack.pop stack) |> List.rev in
         if is_builtin name then
-            let v = call_builtin name args in
-            Stack.push v stack;
-            exec (ip + 1)
+          let v = call_builtin name args in
+          Stack.push v stack;
+          exec (ip + 1)
         else
-            (* User-defined functions: Currently unimplemented *)
-            failwith ("Unknown function: " ^ name)
+          (* Check if this is a user-defined function *)
+          (match Hashtbl.find_opt env name with
+          | Some (VClosure(params, body_stmts, closure_env)) ->
+              if List.length params <> List.length args then
+                failwith ("Incorrect number of arguments for function: " ^ name);
+              let new_env = clone_env closure_env in
+              List.iter2 (fun p a -> Hashtbl.replace new_env p a) params args;
+              let code = codegen_program (Program body_stmts) in
+              (match run_program (Array.of_list code) new_env with
+              | Some v -> Stack.push v stack; exec (ip + 1)
+              | None -> Stack.push (VFloat 0.0) stack; exec (ip + 1))
+          | _ ->
+              failwith ("Unknown function: " ^ name))
       | MAKE_ARRAY n ->
           let arr_elems = List.init n (fun _ -> Stack.pop stack) |> List.rev in
           Stack.push (VArray arr_elems) stack;
@@ -117,11 +134,13 @@ let run_program code env =
               Stack.push value stack;
               exec (ip + 1)
           | _ -> failwith "INDEX: can only index arrays or dictionaries")
-      (* | _ -> failwith "Unsupported opcode" *)
+      | LOAD_CLOSURE(params, stmts) ->
+          let closure_env = clone_env env in
+          Stack.push (VClosure(params, stmts, closure_env)) stack;
+          exec (ip + 1)
     else
       match Stack.is_empty stack with
       | false -> Some (Stack.pop stack)
       | true -> None
   in
   exec 0
-

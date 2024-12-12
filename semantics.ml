@@ -15,7 +15,7 @@ and analyze_stmt env = function
   | LetStmt(name, expr) ->
       let expr_typ = analyze_expr env expr in
       Hashtbl.add env name { typ = Some expr_typ; initialized = true };
-      print_endline ("[Semantics] Declared variable: " ^ name ^ " with type " ^ string_of_typ expr_typ)
+      (* print_endline ("[Semantics] Declared variable: " ^ name ^ " with type " ^ string_of_typ expr_typ) *)
 
   | ExprStmt expr ->
       ignore (analyze_expr env expr)
@@ -88,14 +88,17 @@ and analyze_expr env = function
       signature.return_type
     else
       failwith ("[Semantics] Undefined function: " ^ name)
-
-  | Lambda(params, stmts) ->
+  | Lambda(params, _) ->
+      (* Assume lambda returns float*)
+      (* Later: analyze return statements *)
+      TFunc(List.map (fun _ -> TFloat) params, TFloat)
+  (* | Lambda(params, stmts) ->
       let func_env = Hashtbl.create 16 in
       List.iter (fun param ->
         Hashtbl.add func_env param { typ = None; initialized = true }
       ) params;
       List.iter (analyze_stmt func_env) stmts;
-      TFunc([], TFloat)
+      TFunc([], TFloat) *)
   | ArrayLit elems ->
       let elem_types = List.map (analyze_expr env) elems in
       (match elem_types with

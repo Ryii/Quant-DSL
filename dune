@@ -6,7 +6,7 @@
 
 (executable
  (name repl)
- (public_name quantex-repl)
+ (public_name repl)
  (modules repl)
  (libraries quantex))
 

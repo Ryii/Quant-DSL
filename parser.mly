@@ -1,5 +1,3 @@
-(* parser.mly *)
-
 %{
 open Ast
 %}
@@ -56,6 +54,7 @@ expr:
   | IDENT LPAREN arg_list RPAREN { FuncCall($1, $3) }
   | LBRACKET array_elements RBRACKET { ArrayLit($2) }
   | LBRACE dict_elements RBRACE { DictLit($2) }
+  | FUNCTION LPAREN param_list RPAREN LBRACE stmt_list RBRACE { Lambda($3, $6) }
 
 arg_list:
   | /* empty */ { [] }
@@ -79,3 +78,8 @@ dict_pair_list:
 
 dict_pair:
   | expr COLON expr { ($1, $3) }
+
+param_list:
+  | /* empty */ { [] }
+  | IDENT { [$1] }
+  | param_list COMMA IDENT { $1 @ [$3] }

@@ -147,17 +147,18 @@ let get_builtin_signature name =
       | "historical_returns", _ -> failwith "[Builtins] Invalid arguments for historical_returns"
     
       | "covariance_matrix", [VArray returns] when returns <> [] ->
-          let days = List.length returns in
-          let n = match List.hd returns with VArray row -> List.length row | _ -> failwith "Invalid data format" in
-          let data = Array.init n (fun a ->
-            Array.init days (fun d ->
-              match List.nth returns d with
-              | VArray row -> (
-                  match List.nth row a with
-                  | VFloat r -> r
-                  | _ -> failwith "Invalid return type")
-              | _ -> failwith "Invalid return structure"))
+          let n = List.length returns in
+          let days = match List.hd returns with
+            | VArray daily_returns -> List.length daily_returns
+            | _ -> failwith "Invalid return structure"
           in
+          let data = Array.init n (fun i ->
+            match List.nth returns i with
+            | VArray daily_returns -> Array.of_list (List.map (function
+                | VFloat r -> r
+                | _ -> failwith "Invalid return type") daily_returns)
+            | _ -> failwith "Invalid return structure"
+          ) in
           let means = Array.init n (fun i ->
             Array.fold_left (+.) 0.0 data.(i) /. float_of_int days
           ) in
@@ -166,9 +167,10 @@ let get_builtin_signature name =
             for t = 0 to days - 1 do
               sum := !sum +. (data.(i).(t) -. means.(i)) *. (data.(j).(t) -. means.(j))
             done;
-            !sum /. float_of_int (days - 1)          
+            !sum /. float_of_int (days - 1)
           in
           VArray (List.init n (fun i -> VArray (List.init n (fun j -> VFloat (cov i j)))))
+    
       | "covariance_matrix", _ -> failwith "[Builtins] Invalid arguments for covariance_matrix"
     
       | "mean", [VArray elements] ->
@@ -207,6 +209,14 @@ let get_builtin_signature name =
     
     
       | "optimize_portfolio", [VArray expected_returns; VArray cov_matrix; VDict params] ->
+          if List.length expected_returns = 0 || List.length cov_matrix = 0 then
+            failwith "[optimize_portfolio] Empty input arrays";
+          let n = List.length expected_returns in
+          if List.length cov_matrix <> n then begin
+            print_endline (string_of_int (List.length cov_matrix));
+            print_endline (string_of_int n);
+            failwith "[optimize_portfolio] Dimension mismatch between expected_returns and cov_matrix"
+          end;
           let target_return =
             match List.assoc_opt (VString "target_return") params with
             | Some (VFloat t) -> t
@@ -216,6 +226,8 @@ let get_builtin_signature name =
           let mu = Array.of_list (List.map (function VFloat r -> r | _ -> failwith "Invalid expected return type") expected_returns) in
           let sigma =
             Array.init n (fun i ->
+              if i >= List.length cov_matrix then
+                failwith "[optimize_portfolio] Row index out of bounds";
               match List.nth cov_matrix i with
               | VArray row -> Array.of_list (List.map (function VFloat x -> x | _ -> failwith "Invalid covariance matrix element") row)
               | _ -> failwith "Invalid covariance matrix row")

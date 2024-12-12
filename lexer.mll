@@ -32,7 +32,7 @@ let buffer = Buffer.create 16
 
 rule read = parse
   | [' ' '\t' '\r'] { read lexbuf }
-  | '\n'            { NEWLINE }
+  | '\n'            { read lexbuf }
   | "/*"            { comment lexbuf }
   | "//"            { single_line_comment lexbuf }
   | ['0'-'9']+ ('.' ['0'-'9']+)? as num {
